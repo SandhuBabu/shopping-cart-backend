@@ -17,7 +17,7 @@ public class Test {
 
     @GetMapping("/home")
     public String open() {
-        return jwtService.generateToken();
+        return jwtService.generateAccessToken(1032L, "sandhu");
     }
 
     @GetMapping("/verify")

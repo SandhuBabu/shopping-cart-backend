@@ -1,6 +1,7 @@
 package com.shoppingcart.auth;
 
 import com.shoppingcart.exception.TokenException;
+import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.ExpiredJwtException;
 import io.jsonwebtoken.Jwts;
 import io.jsonwebtoken.io.Decoders;
@@ -12,18 +13,27 @@ import java.util.Date;
 
 @Service
 public class JwtService {
-    public String generateToken() {
-        Long id = 1023234L;
+    public String generateAccessToken(Long id, String email) {
         return Jwts.builder()
-                .subject("@sandhubabu")
-                .claim("id", "ID_88787212329887")
-                .expiration(new Date(System.currentTimeMillis() + 30000))
+                .subject(email)
+                .claim("id", id)
+                .expiration(new Date(System.currentTimeMillis() + 60000))
                 .issuedAt(new Date(System.currentTimeMillis()))
                 .signWith(getKey())
                 .compact();
     }
 
-    public Object verifyToken(String jws) throws TokenException {
+    public String generateRefreshToken(Long id, String email) {
+        return Jwts.builder()
+                .subject(email)
+                .claim("id", id)
+                .claim("type", "refresh")
+                .issuedAt(new Date(System.currentTimeMillis()))
+                .signWith(getKey())
+                .compact();
+    }
+
+    public Claims verifyToken(String jws) throws TokenException {
         try {
             return Jwts.parser()
                     .verifyWith(getKey())
