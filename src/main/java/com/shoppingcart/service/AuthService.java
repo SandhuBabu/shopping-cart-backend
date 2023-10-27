@@ -52,6 +52,7 @@ public class AuthService {
                     .id(user.getId())
                     .username(user.getFullName())
                     .email(user.getEmail())
+                    .role(user.getRole().name())
                     .accessToken(accessToken)
                     .refreshToken(refreshToken.getRefreshToken())
                     .build();
@@ -85,6 +86,7 @@ public class AuthService {
         return AuthResponse.builder()
                 .id(user.get().getId())
                 .username(user.get().getFullName())
+                .role(user.get().getRole().name())
                 .email(user.get().getEmail())
                 .accessToken(accessToken)
                 .refreshToken(refreshToken.getRefreshToken())
@@ -118,6 +120,7 @@ public class AuthService {
                 .id(user.getId())
                 .username(user.getFullName())
                 .email(user.getEmail())
+                .role(user.getRole().name())
                 .accessToken(accessToken)
                 .refreshToken(refreshToken.getRefreshToken())
                 .build();

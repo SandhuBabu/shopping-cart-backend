@@ -47,7 +47,6 @@ public class AuthController {
 
     @PostMapping("/refresh")
     public ResponseEntity<AuthResponse> refresh(@RequestParam String refreshToken) throws TokenException, UserNotFoundException {
-        System.out.println("refreshed : "+refreshToken);
         var res = authService.refresh(refreshToken);
         return ResponseEntity.status(HttpStatus.CREATED).body(res);
     }

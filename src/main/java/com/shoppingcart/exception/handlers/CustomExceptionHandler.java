@@ -20,9 +20,9 @@ public class CustomExceptionHandler {
     }
 
     @ExceptionHandler(value = UserCreationException.class)
-    @ResponseStatus(value = HttpStatus.BAD_REQUEST)
+    @ResponseStatus(value = HttpStatus.CONFLICT)
     public ErrorDto userCreationFailed(UserCreationException e) {
-        return new ErrorDto(HttpStatus.BAD_REQUEST.value(), e.getMessage());
+        return new ErrorDto(HttpStatus.CONFLICT.value(), e.getMessage());
     }
 
 

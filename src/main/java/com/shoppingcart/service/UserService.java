@@ -1,5 +1,6 @@
 package com.shoppingcart.service;
 
+import com.shoppingcart.dto.AuthResponse;
 import com.shoppingcart.entity.User;
 import com.shoppingcart.exception.UserNotFoundException;
 import com.shoppingcart.repository.UserRepository;
@@ -15,8 +16,15 @@ public class UserService {
 
     private final UserRepository userRepository;
 
-    public User findUserByEmail(String email) throws UserNotFoundException {
-        return userRepository.findByEmail(email).orElseThrow(() -> new UserNotFoundException("No user found"));
+    public AuthResponse findUserByEmail(String email) throws UserNotFoundException {
+        var user = userRepository.findByEmail(email).orElseThrow(() -> new UserNotFoundException("No user found"));
+        return AuthResponse.builder()
+                .id(user.getId())
+                .username(user.getFullName())
+                .email(user.getEmail())
+                .role(user.getRole().name())
+                .build();
+
     }
 
     public UserDetailsService userDetailsService() {

@@ -51,7 +51,6 @@ public class JwtFilter extends OncePerRequestFilter {
             }
 
             String email = claims.getSubject();
-            System.out.println(email);
             if(StringUtils.isNotEmpty(email) && SecurityContextHolder.getContext().getAuthentication() == null) {
                 UserDetails userDetails = userService.userDetailsService().loadUserByUsername(email);
 

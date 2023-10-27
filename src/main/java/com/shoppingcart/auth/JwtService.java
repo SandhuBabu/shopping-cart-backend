@@ -17,7 +17,7 @@ public class JwtService {
         return Jwts.builder()
                 .subject(email)
                 .claim("id", id)
-                .expiration(new Date(System.currentTimeMillis() + 60000))
+                .expiration(new Date(System.currentTimeMillis() + 30000))
                 .issuedAt(new Date(System.currentTimeMillis()))
                 .signWith(getKey())
                 .compact();
