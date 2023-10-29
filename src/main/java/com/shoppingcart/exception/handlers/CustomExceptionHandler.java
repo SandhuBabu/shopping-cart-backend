@@ -41,8 +41,8 @@ public class CustomExceptionHandler {
     @ExceptionHandler(value = Exception.class)
     @ResponseStatus(value = HttpStatus.INTERNAL_SERVER_ERROR)
     public ErrorDto globalHandler(Exception e) {
-        e.printStackTrace();
-        System.out.println("ERROR ::: "+ e.getMessage());
+//        e.printStackTrace();
+        System.out.println("45 : HANDLER_ERROR ::: "+ e.getMessage());
         return new ErrorDto(HttpStatus.INTERNAL_SERVER_ERROR.value(), e.getMessage());
     }
 

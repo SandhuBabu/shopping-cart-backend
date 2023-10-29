@@ -93,11 +93,14 @@ public class AuthService {
                 .build();
     }
 
-    public String logout(String email) {
-        var userId = userRepository.findByEmail(email).get().getId();
-        var refreshToken = tokensRepository.findByUserId(userId);
-        tokensRepository.delete(refreshToken);
-        return  "Logout success";
+    public String logout(String token) throws TokenException {
+        try {
+            var refreshToken = tokensRepository.findByRefreshToken(token);
+            tokensRepository.delete(refreshToken);
+            return  "Logout success";
+        } catch (Exception e) {
+            throw new TokenException("Can't complete logout");
+        }
     }
 
     public AuthResponse refresh(String jwt) throws TokenException, UserNotFoundException {

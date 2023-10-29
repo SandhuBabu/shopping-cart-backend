@@ -51,6 +51,7 @@ public class JwtFilter extends OncePerRequestFilter {
             }
 
             String email = claims.getSubject();
+            System.out.println(email);
             if(StringUtils.isNotEmpty(email) && SecurityContextHolder.getContext().getAuthentication() == null) {
                 UserDetails userDetails = userService.userDetailsService().loadUserByUsername(email);
 
@@ -64,9 +65,11 @@ public class JwtFilter extends OncePerRequestFilter {
                 SecurityContextHolder.setContext(context);
             }
         } catch (TokenException e) {
+//            e.printStackTrace();
             System.out.println("Token expired");
         } catch (Exception e) {
-            e.printStackTrace();
+//            e.printStackTrace();
+            System.out.println("ERR_JWT_FLTR :: "+e.getMessage());
             response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
             return;
         }

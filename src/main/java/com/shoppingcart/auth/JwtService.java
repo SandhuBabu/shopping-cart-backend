@@ -17,7 +17,7 @@ public class JwtService {
         return Jwts.builder()
                 .subject(email)
                 .claim("id", id)
-                .expiration(new Date(System.currentTimeMillis() + 30000))
+                .expiration(new Date(System.currentTimeMillis() + 86400000))  // one day in ms = 86,400,000
                 .issuedAt(new Date(System.currentTimeMillis()))
                 .signWith(getKey())
                 .compact();

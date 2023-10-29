@@ -34,15 +34,14 @@ public class AuthController {
     }
 
     @PostMapping("/logout")
-    public ResponseEntity<String> logout(Principal principal) throws TokenException {
+    public ResponseEntity<String> logout(@RequestParam String token) throws TokenException, UserNotFoundException {
 
-        if(principal == null) {
-            throw new TokenException("User not found, logout failed");
+        if(token == null) {
+            throw new UserNotFoundException("User not found, logout failed");
         }
 
-        String email = principal.getName();
         SecurityContextHolder.clearContext();
-        return ResponseEntity.ok(authService.logout(email));
+        return ResponseEntity.ok(authService.logout(token));
     }
 
     @PostMapping("/refresh")
