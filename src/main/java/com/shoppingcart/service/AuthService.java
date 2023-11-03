@@ -33,7 +33,7 @@ public class AuthService {
     public AuthResponse createUser(SignupRequest signupRequest) throws Exception {
         try {
             var user = User.builder()
-                    .role(Role.ROLE_USER)
+                    .role(Role.USER)
                     .fullName(signupRequest.getFullName())
                     .email(signupRequest.getEmail())
                     .password(passwordEncoder.encode(signupRequest.getPassword()))

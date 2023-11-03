@@ -40,6 +40,8 @@ public class JwtFilter extends OncePerRequestFilter {
         }
 
         jwt = authHeader.substring(7);
+        System.out.println("Token is : "+jwt);
+
 
         try {
             Claims claims = jwtService.verifyToken(jwt);
@@ -65,10 +67,10 @@ public class JwtFilter extends OncePerRequestFilter {
                 SecurityContextHolder.setContext(context);
             }
         } catch (TokenException e) {
-//            e.printStackTrace();
+            e.printStackTrace();
             System.out.println("Token expired");
         } catch (Exception e) {
-//            e.printStackTrace();
+            e.printStackTrace();
             System.out.println("ERR_JWT_FLTR :: "+e.getMessage());
             response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
             return;
