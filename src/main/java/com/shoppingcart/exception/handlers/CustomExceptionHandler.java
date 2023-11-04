@@ -62,7 +62,7 @@ public class CustomExceptionHandler {
 
     @ExceptionHandler(value = ProductException.class)
     public ResponseEntity<ErrorDto> productException(ProductException e) {
-        return ResponseEntity.status(e.getStatus()).body(new ErrorDto(e.getStatus(), e.getMessage()));
+        return ResponseEntity.status(e.getStatus()).body(new ErrorDto(e.getStatus().value(), e.getMessage()));
     }
 
 }

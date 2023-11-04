@@ -2,11 +2,12 @@ package com.shoppingcart.exception;
 
 
 import lombok.Getter;
+import org.springframework.http.HttpStatus;
 
 @Getter
 public class ProductException extends Exception{
-    Integer status;
-    public ProductException(String msg, Integer status) {
+    HttpStatus status;
+    public ProductException(String msg, HttpStatus status) {
         super(msg);
         this.status = status;
     }
