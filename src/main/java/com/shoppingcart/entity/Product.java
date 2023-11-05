@@ -25,7 +25,7 @@ public class Product {
     private Double price;
     private Long stockAvailable;
 
-    @Lob
+    @Column(columnDefinition = "TEXT")
     private String description;
     private String imageUrl;
 

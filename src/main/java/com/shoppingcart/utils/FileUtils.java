@@ -33,6 +33,7 @@ public class FileUtils {
 
             return "http://localhost:8080/images/products/product" + productId.toString() + fileName;
         } catch (Exception e) {
+            e.printStackTrace();
             System.out.println(e.getMessage());
             return null;
         }

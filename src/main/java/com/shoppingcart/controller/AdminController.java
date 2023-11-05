@@ -68,9 +68,6 @@ public class AdminController {
 
         var saved = productService.updateProduct(product, image);
 
-
-        if(saved != null)
-            return ResponseEntity.status(HttpStatus.CREATED).body(product);
-        throw new ProductException("Can't create product", HttpStatus.INTERNAL_SERVER_ERROR);
+        return ResponseEntity.ok(saved);
     }
 }
