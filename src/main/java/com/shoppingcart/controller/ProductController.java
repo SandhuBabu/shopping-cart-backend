@@ -1,16 +1,14 @@
 package com.shoppingcart.controller;
 
 
+import com.shoppingcart.dto.PaginationResponse;
 import com.shoppingcart.entity.Product;
 import com.shoppingcart.exception.ProductException;
-import com.shoppingcart.repository.ProductRepository;
 import com.shoppingcart.service.ProductService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
-
-import java.util.List;
 
 @RestController
 @RequiredArgsConstructor
@@ -30,9 +28,12 @@ public class ProductController {
     }
 
     @GetMapping
-    public ResponseEntity<List<Product>> getPagedProducts(@RequestParam(required = false, defaultValue = "1") Integer pageNo) {
-        System.out.println(pageNo);
-        var products = productService.getAllProductsPaginated(pageNo);
+    public ResponseEntity<PaginationResponse<Product>> getPagedProducts(
+            @RequestParam(required = false, defaultValue = "1") Integer pageNo
+    ) {
+        if(pageNo < 1)
+            pageNo = 1;
+        var products = productService.getAllProductsPaginated(pageNo, 3);
         return ResponseEntity.ok(products);
     }
 }

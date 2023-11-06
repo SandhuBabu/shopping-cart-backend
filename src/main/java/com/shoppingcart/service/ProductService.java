@@ -1,17 +1,18 @@
 package com.shoppingcart.service;
 
+import com.shoppingcart.dto.PaginationResponse;
 import com.shoppingcart.entity.Product;
 import com.shoppingcart.exception.ProductException;
 import com.shoppingcart.repository.ProductRepository;
 import com.shoppingcart.utils.FileUtils;
 import lombok.RequiredArgsConstructor;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.dao.DataIntegrityViolationException;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 
-import java.util.List;
 
 @Service
 @RequiredArgsConstructor
@@ -47,8 +48,7 @@ public class ProductService {
             return productRepository.save(product);
         } catch (DataIntegrityViolationException e) {
             throw new ProductException("Can't update, some issue with given data", HttpStatus.BAD_REQUEST);
-        }
-        catch (Exception e) {
+        } catch (Exception e) {
             throw new ProductException("Can't update product", HttpStatus.INTERNAL_SERVER_ERROR);
         }
     }
@@ -58,7 +58,18 @@ public class ProductService {
         return product.orElse(null);
     }
 
-    public List<Product> getAllProductsPaginated(int pageNo) {
-        return productRepository.findAll();
+    public PaginationResponse<Product> getAllProductsPaginated(int pageNo, int pageSize) {
+
+        Pageable page = PageRequest.of(pageNo-1, pageSize);
+        var productsResult = productRepository.findAll(page);
+        PaginationResponse<Product> response = new PaginationResponse<Product>();
+        response.setContent(productsResult.getContent());
+        response.setTotalPages(productsResult.getTotalPages());
+        response.setFirst(productsResult.isFirst());
+        response.setLast(productsResult.isLast());
+        response.setPageNo(pageNo);
+        response.setEmpty(productsResult.isEmpty());
+
+        return response;
     }
 }
