@@ -9,6 +9,7 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
@@ -58,9 +59,28 @@ public class ProductService {
         return product.orElse(null);
     }
 
-    public PaginationResponse<Product> getAllProductsPaginated(int pageNo, int pageSize) {
+    public String deleteProductById(Long id) {
+        System.out.println("Product deleting");
+        var product = productRepository.findById(id);
+        System.out.println(product);
+        if(product.isEmpty()) {
+            return null;
+        }
+        System.out.println("Product deleted successfully");
+        productRepository.delete(product.get());
+        fileUtils.deleteImage(product.get().getImageUrl().substring(38));
+        return "Product deleted successfully";
+    }
 
-        Pageable page = PageRequest.of(pageNo-1, pageSize);
+    public PaginationResponse<Product> getAllProductsPaginated(int pageNo, int pageSize, boolean sort) {
+
+        Pageable page = null;
+        if(sort) {
+            page=PageRequest.of(pageNo-1, pageSize, Sort.by("id").descending());
+        } else{
+            page=PageRequest.of(pageNo-1, pageSize);
+        }
+
         var productsResult = productRepository.findAll(page);
         PaginationResponse<Product> response = new PaginationResponse<Product>();
         response.setContent(productsResult.getContent());

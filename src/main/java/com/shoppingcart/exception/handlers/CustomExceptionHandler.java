@@ -23,7 +23,7 @@ public class CustomExceptionHandler {
     public ErrorDto globalHandler(Exception e) {
         e.printStackTrace();
         System.out.println("45 : CUSTOME_EXCEP_HANDLER_ERROR ::: "+ e.getMessage());
-        return new ErrorDto(HttpStatus.INTERNAL_SERVER_ERROR.value(), e.getMessage());
+        return new ErrorDto(HttpStatus.INTERNAL_SERVER_ERROR.value(), "Something went wrong");
     }
 
 

@@ -29,11 +29,14 @@ public class ProductController {
 
     @GetMapping
     public ResponseEntity<PaginationResponse<Product>> getPagedProducts(
-            @RequestParam(required = false, defaultValue = "1") Integer pageNo
+            @RequestParam(required = false, defaultValue = "1") Integer pageNo,
+            @RequestParam(required = false, defaultValue = "5") Integer pageSize,
+            @RequestParam(required = false, defaultValue = "false") Boolean sort
     ) {
         if(pageNo < 1)
             pageNo = 1;
-        var products = productService.getAllProductsPaginated(pageNo, 3);
+        var products = productService.getAllProductsPaginated(pageNo, pageSize, sort);
+
         return ResponseEntity.ok(products);
     }
 }

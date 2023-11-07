@@ -9,6 +9,9 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
+import java.util.HashMap;
+import java.util.Map;
+
 @RestController
 @RequestMapping("/api/v1/admin")
 @RequiredArgsConstructor
@@ -69,5 +72,17 @@ public class AdminController {
         var saved = productService.updateProduct(product, image);
 
         return ResponseEntity.ok(saved);
+    }
+
+    @DeleteMapping("deleteProduct/{id}")
+    public ResponseEntity<Map<String, String>> deleteProduct(@PathVariable Long id) throws ProductException {
+
+
+        var result = productService.deleteProductById(id);
+        if(result == null)
+            throw new ProductException("Failed to delete product", HttpStatus.NOT_FOUND);
+        Map<String, String> map = new HashMap<>();
+        map.put("message", result);
+        return ResponseEntity.ok(map);
     }
 }
