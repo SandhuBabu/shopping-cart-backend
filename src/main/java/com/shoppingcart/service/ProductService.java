@@ -14,6 +14,8 @@ import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 
+import java.util.List;
+
 
 @Service
 @RequiredArgsConstructor
@@ -91,5 +93,21 @@ public class ProductService {
         response.setEmpty(productsResult.isEmpty());
 
         return response;
+    }
+
+    public List<Product> getFourNewArrivals() {
+        return productRepository.getNewArrivals();
+    }
+
+    public List<Product> getBudgetRandomProducts() {
+        return productRepository.getRandomBudgetProducts();
+    }
+
+    public List<Product> findByPrice(double price) {
+        return productRepository.findByPriceLessThan(price);
+    }
+
+    public List<Product> findProductsByGender(String gender) {
+        return productRepository.findByGender(gender);
     }
 }
