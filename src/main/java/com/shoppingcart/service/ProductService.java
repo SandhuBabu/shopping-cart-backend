@@ -7,6 +7,7 @@ import com.shoppingcart.repository.ProductRepository;
 import com.shoppingcart.utils.FileUtils;
 import lombok.RequiredArgsConstructor;
 import org.springframework.dao.DataIntegrityViolationException;
+import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
@@ -65,7 +66,7 @@ public class ProductService {
         System.out.println("Product deleting");
         var product = productRepository.findById(id);
         System.out.println(product);
-        if(product.isEmpty()) {
+        if (product.isEmpty()) {
             return null;
         }
         System.out.println("Product deleted successfully");
@@ -77,10 +78,10 @@ public class ProductService {
     public PaginationResponse<Product> getAllProductsPaginated(int pageNo, int pageSize, boolean sort) {
 
         Pageable page = null;
-        if(sort) {
-            page=PageRequest.of(pageNo-1, pageSize, Sort.by("id").descending());
-        } else{
-            page=PageRequest.of(pageNo-1, pageSize);
+        if (sort) {
+            page = PageRequest.of(pageNo - 1, pageSize, Sort.by("id").descending());
+        } else {
+            page = PageRequest.of(pageNo - 1, pageSize);
         }
 
         var productsResult = productRepository.findAll(page);
@@ -109,5 +110,24 @@ public class ProductService {
 
     public List<Product> findProductsByGender(String gender) {
         return productRepository.findByGender(gender);
+    }
+
+    public PaginationResponse<Product> searchWithFilters(String title, String gender, String category, Double price, int pageNo, int pageSize) {
+        Pageable pageable = PageRequest.of(pageNo, pageSize);
+        var products = productRepository.findByFilters(title, gender, category, price, pageable);
+        return getPaginatedResponse(products);
+    }
+
+
+    private PaginationResponse<Product> getPaginatedResponse(Page<Product> products) {
+        PaginationResponse<Product> response = new PaginationResponse<Product>();
+        response.setContent(products.getContent());
+        response.setTotalPages(products.getTotalPages());
+        response.setFirst(products.isFirst());
+        response.setLast(products.isLast());
+        response.setPageNo(products.getNumber()+1);
+        response.setEmpty(products.isEmpty());
+
+        return response;
     }
 }

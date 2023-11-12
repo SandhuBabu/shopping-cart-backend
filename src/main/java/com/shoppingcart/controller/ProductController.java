@@ -69,4 +69,22 @@ public class ProductController {
         var products = productService.findProductsByGender(gender);
         return ResponseEntity.ok(products);
     }
+
+    @GetMapping("/search")
+    public ResponseEntity<PaginationResponse<Product>> searchWithFilters(
+            @RequestParam(value = "title", required = false) String title,
+            @RequestParam(value = "price", required = false) Double price,
+            @RequestParam(value = "gender", required = false) String gender,
+            @RequestParam(value = "category", required = false) String category,
+            @RequestParam(value = "pageNo", required = false) Integer pageNo
+    ) {
+      try {
+          if(pageNo == null || pageNo < 1)
+              pageNo=1;
+          var products = productService.searchWithFilters(title, gender, category, price, pageNo-1, 2);
+          return ResponseEntity.ok(products);
+      } catch (Exception e) {
+          return ResponseEntity.ok(new PaginationResponse<Product>());
+      }
+    }
 }
