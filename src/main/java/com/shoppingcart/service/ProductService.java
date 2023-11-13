@@ -119,6 +119,12 @@ public class ProductService {
     }
 
 
+    public PaginationResponse<Product> searchResults(String term, int pageNo, int pageSize) {
+        Pageable pageable=PageRequest.of(pageNo, pageSize);
+        var products = productRepository.getSearchResults(term, pageable);
+        return getPaginatedResponse(products);
+    }
+
     private PaginationResponse<Product> getPaginatedResponse(Page<Product> products) {
         PaginationResponse<Product> response = new PaginationResponse<Product>();
         response.setContent(products.getContent());

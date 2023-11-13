@@ -20,6 +20,9 @@ public interface ProductRepository extends JpaRepository<Product, Long> {
     @Query("SELECT p FROM Product p WHERE p.stockAvailable > 1 AND p.price < 500 ORDER BY RAND() LIMIT 5")
     public List<Product> getRandomBudgetProducts();
 
+    @Query("SELECT p FROM Product p WHERE p.title LIKE %:term% OR p.category LIKE %:term% OR p.gender LIKE %:term%")
+    Page<Product> getSearchResults(String term, Pageable pageable);
+
     public List<Product> findByPriceLessThan(double price);
 
     public List<Product> findByGender(String gender);
@@ -37,10 +40,10 @@ public interface ProductRepository extends JpaRepository<Product, Long> {
             }
 
             if(StringUtils.hasText(gender)) {
-                predicates.add(criteriaBuilder.equal(root.get("gender"), gender));
+                predicates.add(criteriaBuilder.like(root.get("gender"), gender));
             }
             if(StringUtils.hasText(category)) {
-                predicates.add(criteriaBuilder.equal(root.get("category"), category));
+                predicates.add(criteriaBuilder.like(root.get("category"), category));
             }
             if(price != null) {
                 predicates.add(criteriaBuilder.lessThanOrEqualTo(root.get("price"), price));

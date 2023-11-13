@@ -70,7 +70,7 @@ public class ProductController {
         return ResponseEntity.ok(products);
     }
 
-    @GetMapping("/search")
+    @GetMapping("/searchWithFilters")
     public ResponseEntity<PaginationResponse<Product>> searchWithFilters(
             @RequestParam(value = "title", required = false) String title,
             @RequestParam(value = "price", required = false) Double price,
@@ -86,5 +86,15 @@ public class ProductController {
       } catch (Exception e) {
           return ResponseEntity.ok(new PaginationResponse<Product>());
       }
+    }
+
+    @GetMapping("/search/{term}")
+    public ResponseEntity<PaginationResponse<Product>> searchWithTerm(
+            @PathVariable String term,
+            @RequestParam(defaultValue = "1") int pageNo
+    ) {
+        if(pageNo<1) pageNo=1;
+        var products = productService.searchResults(term, pageNo-1, 3);
+        return ResponseEntity.ok(products);
     }
 }
