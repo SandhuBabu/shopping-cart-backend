@@ -7,6 +7,7 @@ import com.shoppingcart.exception.UserNotFoundException;
 import com.shoppingcart.repository.CartRepository;
 import com.shoppingcart.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
+import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.stereotype.Service;
 
 import java.util.ArrayList;
@@ -18,6 +19,12 @@ public class CartService {
     private final CartRepository cartRepository;
     private final UserRepository userRepository;
     private final ProductService productService;
+
+    public List<Product> getCartItems(String email) {
+        var user = userRepository.findByEmail(email).orElseThrow(()->new UnsupportedOperationException("Unauthorized"));
+        var cart = cartRepository.findByUser(user);
+        return cart.getProducts();
+    }
 
     public CartEditResponse addToCart(Long productId, String userEmail) throws Exception {
         var user = userRepository.findByEmail(userEmail).orElseThrow(() -> new UserNotFoundException("Unauthorized"));
@@ -79,5 +86,16 @@ public class CartService {
         var user = userRepository.findByEmail(userEmail).orElseThrow(() -> new UserNotFoundException("Unauthorized"));
         var cart = cartRepository.findByUser(user);
         return cart.getProducts().size();
+    }
+
+    public boolean removeAllItemsFromCart(String email) {
+        var user = userRepository.findByEmail(email).orElseThrow(()->new UsernameNotFoundException("Unauthorised"));
+        var cart = cartRepository.findByUser(user);
+        if(cart.getProducts().isEmpty()) {
+           return false;
+        }
+        cart.getProducts().clear();
+        cartRepository.save(cart);
+        return true;
     }
 }
