@@ -71,5 +71,11 @@ public class CartController {
         var res = cartService.getCartCount(userEmail);
         return ResponseEntity.ok(res);
     }
+
+    @PostMapping("/checkout")
+    public ResponseEntity<Object> checkout(Principal principal) {
+        var res = cartService.checkout(principal.getName());
+        return ResponseEntity.ok(res);
+    }
 }
 

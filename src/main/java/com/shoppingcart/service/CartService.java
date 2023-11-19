@@ -98,4 +98,9 @@ public class CartService {
         cartRepository.save(cart);
         return true;
     }
+
+    public Object checkout(String email) {
+        var user = userRepository.findByEmail(email);
+        return user;
+    }
 }

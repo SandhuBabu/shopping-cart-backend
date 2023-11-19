@@ -28,7 +28,12 @@ public class User implements UserDetails {
 
     @Column(unique = true)
     private String email;
+
+    @Column(unique = true)
+    private Long mobile;
+
     private String password;
+
 
     @Enumerated
     private Role role;

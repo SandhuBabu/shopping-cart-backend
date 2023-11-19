@@ -36,6 +36,7 @@ public class AuthService {
                     .role(Role.USER)
                     .fullName(signupRequest.getFullName())
                     .email(signupRequest.getEmail())
+                    .mobile(signupRequest.getMobile())
                     .password(passwordEncoder.encode(signupRequest.getPassword()))
                     .build();
             user = userRepository.save(user);
@@ -123,6 +124,7 @@ public class AuthService {
                 .id(user.getId())
                 .username(user.getFullName())
                 .email(user.getEmail())
+                .mobile(user.getMobile())
                 .role(user.getRole().name())
                 .accessToken(accessToken)
                 .refreshToken(refreshToken.getRefreshToken())

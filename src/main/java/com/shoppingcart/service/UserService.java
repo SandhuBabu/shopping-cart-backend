@@ -22,6 +22,7 @@ public class UserService {
                 .id(user.getId())
                 .username(user.getFullName())
                 .email(user.getEmail())
+                .mobile(user.getMobile())
                 .role(user.getRole().name())
                 .build();
 
@@ -34,5 +35,19 @@ public class UserService {
                 return userRepository.findByEmail(username).orElseThrow(() -> new UsernameNotFoundException("User not found"));
             }
         };
+    }
+
+    public String update(String userEmail, String username, Long mobile) throws UserNotFoundException {
+        var user = userRepository.findByEmail(userEmail).orElseThrow(()->new UserNotFoundException("Unauthorized"));
+        if(username!=null) {
+            user.setFullName(username);
+        }
+
+        if(mobile!=null) {
+            user.setMobile(mobile);
+        }
+
+        userRepository.save(user);
+        return  "Updated Successfully";
     }
 }
