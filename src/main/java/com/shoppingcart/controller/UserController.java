@@ -1,11 +1,14 @@
 package com.shoppingcart.controller;
 
 
+import com.shoppingcart.dto.AddressDto;
 import com.shoppingcart.dto.AuthResponse;
+import com.shoppingcart.entity.Address;
 import com.shoppingcart.entity.User;
 import com.shoppingcart.exception.UserNotFoundException;
 import com.shoppingcart.service.UserService;
 import lombok.RequiredArgsConstructor;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
@@ -42,5 +45,19 @@ public class UserController {
         } catch (UserNotFoundException e) {
             throw new Exception("Failed to update details");
         }
+    }
+
+    @PostMapping("/addAddress")
+    public ResponseEntity<AddressDto> addAddress(@RequestBody AddressDto address, Principal principal) {
+        var userEmail = principal.getName();
+        var res = userService.addAddress(userEmail, address);
+        return ResponseEntity.status(HttpStatus.CREATED).body(res);
+    }
+
+    @GetMapping("/address")
+    public ResponseEntity<AddressDto> getAddress(Principal principal) throws UserNotFoundException {
+        var userEmail = principal.getName();
+        var res = userService.getUserAddress(userEmail);
+        return ResponseEntity.ok(res);
     }
 }

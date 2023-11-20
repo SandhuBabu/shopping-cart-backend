@@ -57,6 +57,7 @@ public class CustomExceptionHandler {
     @ExceptionHandler(value = HttpMessageNotReadableException.class)
     @ResponseStatus(value = HttpStatus.BAD_REQUEST)
     public ErrorDto messageNotReadable(HttpMessageNotReadableException e) {
+        e.printStackTrace();
         return new ErrorDto(HttpStatus.BAD_REQUEST.value(), "Some data's are missing");
     }
 
