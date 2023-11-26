@@ -7,6 +7,7 @@ import com.shoppingcart.entity.User;
 import com.shoppingcart.exception.UserNotFoundException;
 import com.shoppingcart.repository.AddressRepository;
 import com.shoppingcart.repository.UserRepository;
+import io.micrometer.common.util.StringUtils;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UserDetailsService;
@@ -96,7 +97,7 @@ public class UserService {
         var user = userRepository.findByEmail(userEmail).orElseThrow(()->new UserNotFoundException("Unauthorized"));
         var address = addressRepository.findByUser(user);
 
-        if(address.getId() == null) {
+        if(address == null) {
             return new AddressDto();
         }
 

@@ -21,7 +21,7 @@ public class CartService {
     private final ProductService productService;
 
     public List<Product> getCartItems(String email) {
-        var user = userRepository.findByEmail(email).orElseThrow(()->new UnsupportedOperationException("Unauthorized"));
+        var user = userRepository.findByEmail(email).orElseThrow(() -> new UnsupportedOperationException("Unauthorized"));
         var cart = cartRepository.findByUser(user);
         return cart.getProducts();
     }
@@ -85,14 +85,14 @@ public class CartService {
     public Integer getCartCount(String userEmail) throws UserNotFoundException {
         var user = userRepository.findByEmail(userEmail).orElseThrow(() -> new UserNotFoundException("Unauthorized"));
         var cart = cartRepository.findByUser(user);
-        return cart.getProducts().size();
+        return cart != null ? cart.getProducts().size() : null;
     }
 
     public boolean removeAllItemsFromCart(String email) {
-        var user = userRepository.findByEmail(email).orElseThrow(()->new UsernameNotFoundException("Unauthorised"));
+        var user = userRepository.findByEmail(email).orElseThrow(() -> new UsernameNotFoundException("Unauthorised"));
         var cart = cartRepository.findByUser(user);
-        if(cart.getProducts().isEmpty()) {
-           return false;
+        if (cart.getProducts().isEmpty()) {
+            return false;
         }
         cart.getProducts().clear();
         cartRepository.save(cart);
