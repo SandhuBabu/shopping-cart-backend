@@ -25,7 +25,7 @@ public class AdminController {
             @RequestParam String category,
             @RequestParam String gender,
             @RequestParam String description,
-            @RequestParam Double price,
+            @RequestParam Integer price,
             @RequestParam Long stockAvailable,
             @RequestParam MultipartFile image
     ) throws ProductException {
@@ -54,7 +54,7 @@ public class AdminController {
             @RequestParam String category,
             @RequestParam String gender,
             @RequestParam String description,
-            @RequestParam Double price,
+            @RequestParam Integer price,
             @RequestParam Long stockAvailable,
             @RequestParam(required = false) MultipartFile image
     ) throws ProductException {

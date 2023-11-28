@@ -34,6 +34,9 @@ public class User implements UserDetails {
 
     private String password;
 
+    @ManyToOne
+    private Address address;
+
 
     @Enumerated
     private Role role;

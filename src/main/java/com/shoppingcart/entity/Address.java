@@ -16,9 +16,6 @@ public class Address {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    @OneToOne
-    private User user;
-
     private String houseName;
     private String locality;
     private String district;

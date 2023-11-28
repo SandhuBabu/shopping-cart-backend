@@ -73,7 +73,6 @@ public class UserService {
                 .district(address.getDistrict())
                 .state(address.getState())
                 .zip(address.getZip())
-                .user(user)
                 .build();
         var saved = addressRepository.save(address1);
         address.setId(saved.getId());
@@ -95,7 +94,8 @@ public class UserService {
 
     public AddressDto getUserAddress(String userEmail) throws UserNotFoundException {
         var user = userRepository.findByEmail(userEmail).orElseThrow(()->new UserNotFoundException("Unauthorized"));
-        var address = addressRepository.findByUser(user);
+//        var address = addressRepository.findByUser(user);
+        var address = user.getAddress();
 
         if(address == null) {
             return new AddressDto();

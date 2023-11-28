@@ -22,7 +22,7 @@ public class Product {
     private String title;
     private String category;
     private String gender;
-    private Double price;
+    private Integer price;
     private Long stockAvailable;
 
     @Column(columnDefinition = "TEXT")
