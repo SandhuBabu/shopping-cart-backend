@@ -100,6 +100,7 @@ public class AuthService {
             tokensRepository.delete(refreshToken);
             return  "Logout success";
         } catch (Exception e) {
+            e.printStackTrace();
             throw new TokenException("Can't complete logout");
         }
     }

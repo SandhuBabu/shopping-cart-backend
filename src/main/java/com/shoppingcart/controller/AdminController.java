@@ -1,7 +1,10 @@
 package com.shoppingcart.controller;
 
+import com.shoppingcart.dto.OrderDto;
+import com.shoppingcart.entity.Orders;
 import com.shoppingcart.entity.Product;
 import com.shoppingcart.exception.ProductException;
+import com.shoppingcart.service.OrderService;
 import com.shoppingcart.service.ProductService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
@@ -10,6 +13,7 @@ import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 @RestController
@@ -18,6 +22,7 @@ import java.util.Map;
 public class AdminController {
 
     private final ProductService productService;
+    private final OrderService orderService;
 
     @PostMapping("/addProduct")
     public ResponseEntity<Product> addProduct(
@@ -84,5 +89,12 @@ public class AdminController {
         Map<String, String> map = new HashMap<>();
         map.put("message", result);
         return ResponseEntity.ok(map);
+    }
+
+
+    @GetMapping("/orders/all")
+    public ResponseEntity<List<OrderDto>> getAllOrders() {
+        var res = orderService.getAllOrdersForAdmin();
+        return ResponseEntity.ok(res);
     }
 }

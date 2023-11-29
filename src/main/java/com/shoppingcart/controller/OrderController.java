@@ -3,14 +3,14 @@ package com.shoppingcart.controller;
 import com.shoppingcart.dto.CreateOrderRequest;
 import com.shoppingcart.dto.OrderCreatedResponse;
 import com.shoppingcart.dto.OrderSuccessDto;
+import com.shoppingcart.dto.PaymentFailureDto;
+import com.shoppingcart.entity.Orders;
 import com.shoppingcart.service.OrderService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.security.access.prepost.PreAuthorize;
+import org.springframework.web.bind.annotation.*;
 
 import java.security.Principal;
 
@@ -26,17 +26,24 @@ public class OrderController {
 
         var userEmail = principal.getName();
         var order = orderService.createOrder(createOrderRequest, userEmail);
-        if(order == null)
+        if (order == null)
             return ResponseEntity.status(HttpStatus.UNPROCESSABLE_ENTITY).build();
         return ResponseEntity.status(HttpStatus.CREATED).body(order);
     }
 
-    @PostMapping("/create/success")
-    public ResponseEntity<Object> orderSuccess(@RequestBody OrderSuccessDto orderSuccessDto, Principal principal) {
-
+    @PostMapping("/payment/success")
+    public ResponseEntity<String> orderSuccess(@RequestBody OrderSuccessDto orderSuccessDto) {
         System.out.println(orderSuccessDto);
-        var userEmail = principal.getName();
-        var res=orderService.orderSuccess(orderSuccessDto, userEmail);
+        var res = orderService.paymentSuccess(orderSuccessDto);
+        if (res == null)
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                    .body("Failed to save payment details, if order is not showing contact customer care");
+        return ResponseEntity.ok(res);
+    }
+
+    @PostMapping("/payment/failure")
+    public ResponseEntity<String> paymentFailed(@RequestBody PaymentFailureDto paymentFailureDto) {
+        var res = orderService.paymentFailed(paymentFailureDto);
         return ResponseEntity.ok(res);
     }
 }
