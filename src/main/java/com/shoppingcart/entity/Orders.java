@@ -7,6 +7,8 @@ import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
+import java.util.Date;
+
 @Entity
 @Data
 @Builder
@@ -25,6 +27,8 @@ public class Orders {
     private Integer quantity;
     private Integer totalAmount;
 
+    @Temporal(TemporalType.DATE)
+    private Date createAt;
 
     @ManyToOne
     private User user;

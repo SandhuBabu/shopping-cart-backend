@@ -10,10 +10,14 @@ import com.shoppingcart.repository.OrderRepository;
 import com.shoppingcart.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
 import org.json.JSONObject;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.Date;
 import java.util.List;
 
 @Service
@@ -53,6 +57,58 @@ public class OrderService {
             e.printStackTrace();
         }
         return null;
+    }
+
+
+
+    public String paymentSuccess(OrderSuccessDto orderSuccessDto) {
+        try {
+            var orders = orderRepository.findByRazorpayOrderId(orderSuccessDto.getRazorpayOderId());
+            for (Orders order : orders) {
+                order.setPaymentId(orderSuccessDto.getPaymentId());
+                order.setPaymentStatus("paid");
+                order.setRazorpaySignature(orderSuccessDto.getRazorpaySignature());
+                order.setCreateAt(new Date(System.currentTimeMillis()));
+                order.setStatus("placed");
+            }
+
+            orderRepository.saveAll(orders);
+            return "success";
+        } catch (Exception e) {
+            return null;
+        }
+    }
+
+    public String paymentFailed(PaymentFailureDto paymentFailureDto) {
+        var orders = orderRepository.findByRazorpayOrderId(paymentFailureDto.getOrderId());
+        for(Orders order: orders) {
+            order.setPaymentStatus("failed");
+            order.setPaymentId(paymentFailureDto.getPaymentId());
+        }
+        orderRepository.saveAll(orders);
+        return "saved payment failure";
+    }
+
+    public PaginationResponse<OrderDto> getAllOrdersForAdmin(Integer pageSize, Integer pageNo) {
+        Pageable pageable = PageRequest.of(pageNo, pageSize);
+        var orders = orderRepository.findByStatusNot("created", pageable);
+        var res = buildOrdersPaginated(orders);
+        return res;
+    }
+
+    public Integer getCountOfNewOrders(String status) {
+        return orderRepository.countByStatus(status);
+    }
+
+    public String changeStatus(Long orderId, String status) {
+        try {
+            var order = orderRepository.findById(orderId).get();
+            order.setStatus(status);
+            orderRepository.save(order);
+            return "Status successfully changed to "+status;
+        } catch (Exception e) {
+            return "Failed to change status to "+status;
+        }
     }
 
     private Order createRazorpayOrder(Integer totalAmount) throws RazorpayException {
@@ -100,43 +156,12 @@ public class OrderService {
                 .build();
     }
 
-    public String paymentSuccess(OrderSuccessDto orderSuccessDto) {
-        try {
-            var orders = orderRepository.findByRazorpayOrderId(orderSuccessDto.getRazorpayOderId());
-            for (Orders order : orders) {
-                order.setPaymentId(orderSuccessDto.getPaymentId());
-                order.setPaymentStatus("paid");
-                order.setRazorpaySignature(orderSuccessDto.getRazorpaySignature());
-                order.setStatus("placed");
-            }
-
-            orderRepository.saveAll(orders);
-            return "success";
-        } catch (Exception e) {
-            return null;
-        }
-    }
-
-    public String paymentFailed(PaymentFailureDto paymentFailureDto) {
-        var orders = orderRepository.findByRazorpayOrderId(paymentFailureDto.getOrderId());
-        for(Orders order: orders) {
-            order.setPaymentStatus("failed");
-            order.setPaymentId(paymentFailureDto.getPaymentId());
-        }
-        orderRepository.saveAll(orders);
-        return "saved payment failure";
-    }
-
-    public List<OrderDto> getAllOrdersForAdmin() {
-        var orders = orderRepository.findByStatusNot("created");
-        return buildOrderDto(orders);
-    }
-
     private List<OrderDto> buildOrderDto(List<Orders> orders) {
         List<OrderDto> result = new ArrayList<>();
         for(Orders order: orders) {
             var dto = OrderDto.builder()
                     .id(order.getId())
+                    .createdAt(order.getCreateAt())
                     .razorpayOrderId(order.getRazorpayOrderId())
                     .paymentId(order.getPaymentId())
                     .status(order.getStatus())
@@ -152,7 +177,19 @@ public class OrderService {
                     .build();
             result.add(dto);
         }
-        Collections.reverse(result);
+//        Collections.reverse(result);
         return result;
+    }
+
+    private PaginationResponse<OrderDto> buildOrdersPaginated(Page<Orders> orders) {
+        // create paginated response set content by building orderdto
+        PaginationResponse<OrderDto> response = new PaginationResponse<>();
+        response.setTotalPages(orders.getTotalPages());
+        response.setFirst(orders.isFirst());
+        response.setLast(orders.isLast());
+        response.setEmpty(orders.isEmpty());
+        response.setPageNo(orders.getNumber()+1);
+        response.setContent(buildOrderDto(orders.getContent()));
+        return response;
     }
 }

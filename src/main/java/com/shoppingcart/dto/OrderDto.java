@@ -5,6 +5,8 @@ import com.shoppingcart.entity.Product;
 import lombok.Builder;
 import lombok.Data;
 
+import java.util.Date;
+
 @Data
 @Builder
 public class OrderDto {
@@ -19,6 +21,7 @@ public class OrderDto {
     private String fullName;
     private String email;
     private Long mobile;
+    private Date createdAt;
     private Product product;
     private Address address;
 }

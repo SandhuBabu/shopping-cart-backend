@@ -1,6 +1,7 @@
 package com.shoppingcart.controller;
 
 import com.shoppingcart.dto.OrderDto;
+import com.shoppingcart.dto.PaginationResponse;
 import com.shoppingcart.entity.Orders;
 import com.shoppingcart.entity.Product;
 import com.shoppingcart.exception.ProductException;
@@ -92,9 +93,24 @@ public class AdminController {
     }
 
 
-    @GetMapping("/orders/all")
-    public ResponseEntity<List<OrderDto>> getAllOrders() {
-        var res = orderService.getAllOrdersForAdmin();
+    @GetMapping("/orders/all/{pageNo}")
+    public ResponseEntity<PaginationResponse<OrderDto>> getAllOrders(@PathVariable Integer pageNo) {
+        if(pageNo < 1)
+            pageNo = 1;
+
+        var res = orderService.getAllOrdersForAdmin(5, pageNo-1);
+        return ResponseEntity.ok(res);
+    }
+
+    @GetMapping("/orders/{status}/count")
+    public ResponseEntity<Integer> getNewOrdersCount(@PathVariable String status) {
+        var count = orderService.getCountOfNewOrders(status);
+        return ResponseEntity.ok(count);
+    }
+
+    @PostMapping("/orders/{orderId}/changeStatus/{status}")
+    public ResponseEntity<String> changeOrderStatus(@PathVariable Long orderId, @PathVariable String status) {
+        var res = orderService.changeStatus(orderId, status);
         return ResponseEntity.ok(res);
     }
 }
