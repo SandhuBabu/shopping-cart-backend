@@ -5,20 +5,23 @@ import com.shoppingcart.dto.*;
 import com.shoppingcart.entity.Address;
 import com.shoppingcart.entity.Orders;
 import com.shoppingcart.entity.User;
+import com.shoppingcart.exception.UserNotFoundException;
 import com.shoppingcart.repository.AddressRepository;
 import com.shoppingcart.repository.OrderRepository;
 import com.shoppingcart.repository.UserRepository;
+import com.shoppingcart.utils.DateUtils;
 import lombok.RequiredArgsConstructor;
 import org.json.JSONObject;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
+import org.springframework.web.HttpMediaTypeNotAcceptableException;
 
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.Date;
 import java.util.List;
+import java.util.Objects;
 
 @Service
 @RequiredArgsConstructor
@@ -28,11 +31,13 @@ public class OrderService {
     private final ProductService productService;
     private final OrderRepository orderRepository;
 
-    private final Integer DELIVERY_FEE = 49;
+    private final String KEY_ID = "rzp_test_iggxVvLejnP8C3";
+    private final String KEY_SECRET = "O1a4SmQssljYKw8GHxGcAfZO";
 
     public OrderCreatedResponse createOrder(CreateOrderRequest orderRequestDto, String userEmail) {
 
         try {
+            Integer DELIVERY_FEE = 49;
             Integer totalAmount = (orderRequestDto.getTotalAmount() + DELIVERY_FEE) * 100;
             Order order = createRazorpayOrder(totalAmount);
             if (order == null)
@@ -59,16 +64,17 @@ public class OrderService {
         return null;
     }
 
-
-
     public String paymentSuccess(OrderSuccessDto orderSuccessDto) {
         try {
             var orders = orderRepository.findByRazorpayOrderId(orderSuccessDto.getRazorpayOderId());
             for (Orders order : orders) {
+                var product = productService.getProductById(order.getProduct().getId());
+                productService.updateStock(product.getId(), product.getStockAvailable() - order.getQuantity());
+
                 order.setPaymentId(orderSuccessDto.getPaymentId());
                 order.setPaymentStatus("paid");
                 order.setRazorpaySignature(orderSuccessDto.getRazorpaySignature());
-                order.setCreateAt(new Date(System.currentTimeMillis()));
+                order.setCreatedAt(new Date(System.currentTimeMillis()));
                 order.setStatus("placed");
             }
 
@@ -81,7 +87,7 @@ public class OrderService {
 
     public String paymentFailed(PaymentFailureDto paymentFailureDto) {
         var orders = orderRepository.findByRazorpayOrderId(paymentFailureDto.getOrderId());
-        for(Orders order: orders) {
+        for (Orders order : orders) {
             order.setPaymentStatus("failed");
             order.setPaymentId(paymentFailureDto.getPaymentId());
         }
@@ -89,11 +95,16 @@ public class OrderService {
         return "saved payment failure";
     }
 
+    public List<OrderDto> getAllUsersOrder(String email) {
+        var user = userRepository.findByEmail(email).get();
+        var orders = orderRepository.findByUserAndStatusNot(user, "created");
+        return buildOrderDto(orders);
+    }
+
     public PaginationResponse<OrderDto> getAllOrdersForAdmin(Integer pageSize, Integer pageNo) {
         Pageable pageable = PageRequest.of(pageNo, pageSize);
         var orders = orderRepository.findByStatusNot("created", pageable);
-        var res = buildOrdersPaginated(orders);
-        return res;
+        return buildOrdersPaginated(orders);
     }
 
     public Integer getCountOfNewOrders(String status) {
@@ -104,24 +115,107 @@ public class OrderService {
         try {
             var order = orderRepository.findById(orderId).get();
             order.setStatus(status);
+            if (status.equals("delivered")) {
+                order.setRating(0);
+            }
             orderRepository.save(order);
-            return "Status successfully changed to "+status;
+            return "Status successfully changed to " + status;
         } catch (Exception e) {
-            return "Failed to change status to "+status;
+            return "Failed to change status to " + status;
         }
     }
 
-    private Order createRazorpayOrder(Integer totalAmount) throws RazorpayException {
-        final String KEY_ID = "rzp_test_iggxVvLejnP8C3";
-        final String KEY_SECRET = "O1a4SmQssljYKw8GHxGcAfZO";
+    public Orders checkAuthorizedUserAction(String email, Long id) throws UserNotFoundException {
+        var user = userRepository.findByEmail(email).orElseThrow(() -> new UserNotFoundException("unauthorized"));
+        return orderRepository.findByIdAndUser(id, user);
+    }
 
+    public String addRatingToOrder(Long id, Integer rating, String email) throws UserNotFoundException {
+        var order = this.checkAuthorizedUserAction(email, id);
+
+        if (order == null)
+            return null;
+
+        order.setRating(rating);
+        orderRepository.save(order);
+        return "Successfully added rating";
+    }
+
+    public AdminDashboardDto getDashboardDetails() {
+        Integer newOrders = orderRepository.countByStatus("placed");
+        Integer todaysEarning = orderRepository.findTodaysEarnings(new Date());
+        Integer totalEarnings = orderRepository.findSumOfEarnings();
+        var recentOrdersDto = buildOrderDto(orderRepository.getRecentOrders());
+        var outOfStockProducts = productService.getOutOfStockProducts();
+
+        return AdminDashboardDto.builder()
+                .newOrdersCount(newOrders)
+                .outOfStock(outOfStockProducts)
+                .todaysEarning(todaysEarning)
+                .totalEarnings(totalEarnings)
+                .recentOrders(recentOrdersDto)
+                .build();
+    }
+
+    public Object cancelOrder(Long id, String email) {
+        var user = userRepository.findByEmail(email).get();
+        var order = orderRepository.findByIdAndUser(id, user);
+
+        if (order == null)
+            return "Order not found ";
+
+        if (Objects.equals(order.getStatus(), "cancelled"))
+            return "order already cancelled";
+
+        try {
+            Long diff = DateUtils.getDateDifference(order.getCreatedAt(), new Date());
+            if (diff > 10)
+                return "Sorry, return policy is only available for 10 days only";
+
+            var refund = refundRequest(order.getPaymentId(), order.getTotalAmount(), order.getId());
+            order.setStatus("cancelled");
+            orderRepository.save(order);
+            return "success";
+
+        } catch (RazorpayException e) {
+            order.setStatus("refund_failed");
+            e.printStackTrace();
+            return "Refund failed : " + e.getMessage();
+        }
+    }
+
+
+    private Object refundRequest(String paymentId, Integer amount, Long orderId) throws RazorpayException {
+        try {
+            RazorpayClient razorpay = new RazorpayClient(KEY_ID, KEY_SECRET);
+            JSONObject request = new JSONObject();
+            request.put("amount", amount * 100);
+            request.put("speed_processed", "instant");
+            request.put("speed", "optimum");
+
+
+            request.put("receipt", "Receipt No. " + orderId.toString());
+
+            return razorpay.payments.refund(paymentId, request);
+        } catch (Exception e) {
+            return "success";
+        }
+
+    }
+
+    private Order createRazorpayOrder(Integer totalAmount) throws RazorpayException {
         RazorpayClient razorpay = new RazorpayClient(KEY_ID, KEY_SECRET);
         JSONObject orderRequest = new JSONObject();
 
+        var lastOrderId = orderRepository.findLastId();
+        if (lastOrderId == null)
+            lastOrderId = 1L;
+
+        lastOrderId += 1;
 
         orderRequest.put("amount", totalAmount);
         orderRequest.put("currency", "INR");
-        orderRequest.put("receipt", "receipt#1");
+        orderRequest.put("receipt", "receipt#" + lastOrderId);
 
         return razorpay.orders.create(orderRequest);
     }
@@ -133,7 +227,7 @@ public class OrderService {
                     .product(productService.getProductById(product.getId()))
                     .razorpayOrderId(order.get("id"))
                     .quantity(product.getQuantity())
-                    .totalAmount((productService.getProductById(product.getId()).getPrice() * product.getQuantity()) + DELIVERY_FEE)
+                    .totalAmount((productService.getProductById(product.getId()).getPrice() * product.getQuantity()))
                     .status("created")
                     .paymentStatus("unpaid")
                     .user(user)
@@ -158,13 +252,14 @@ public class OrderService {
 
     private List<OrderDto> buildOrderDto(List<Orders> orders) {
         List<OrderDto> result = new ArrayList<>();
-        for(Orders order: orders) {
+        for (Orders order : orders) {
             var dto = OrderDto.builder()
                     .id(order.getId())
-                    .createdAt(order.getCreateAt())
+                    .createdAt(order.getCreatedAt())
                     .razorpayOrderId(order.getRazorpayOrderId())
                     .paymentId(order.getPaymentId())
                     .status(order.getStatus())
+                    .rating(order.getRating())
                     .paymentStatus(order.getPaymentStatus())
                     .razorpaySignature(order.getRazorpaySignature())
                     .quantity(order.getQuantity())
@@ -188,7 +283,7 @@ public class OrderService {
         response.setFirst(orders.isFirst());
         response.setLast(orders.isLast());
         response.setEmpty(orders.isEmpty());
-        response.setPageNo(orders.getNumber()+1);
+        response.setPageNo(orders.getNumber() + 1);
         response.setContent(buildOrderDto(orders.getContent()));
         return response;
     }

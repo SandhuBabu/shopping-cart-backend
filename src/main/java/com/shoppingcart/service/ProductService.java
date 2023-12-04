@@ -104,7 +104,7 @@ public class ProductService {
         return productRepository.getRandomBudgetProducts();
     }
 
-    public List<Product> findByPrice(double price) {
+    public List<Product> findByPrice(Integer price) {
         return productRepository.findByPriceLessThan(price);
     }
 
@@ -118,13 +118,21 @@ public class ProductService {
         return getPaginatedResponse(products);
     }
 
-
     public PaginationResponse<Product> searchResults(String term, int pageNo, int pageSize) {
         Pageable pageable=PageRequest.of(pageNo, pageSize);
         var products = productRepository.getSearchResults(term, pageable);
         return getPaginatedResponse(products);
     }
 
+    public List<Product> getOutOfStockProducts() {
+        return productRepository.findByStockAvailableLessThan(1);
+    }
+
+    public  Product updateStock (Long id, Long nos) {
+        var product = productRepository.findById(id).get();
+        product.setStockAvailable(nos);
+        return productRepository.save(product);
+    }
     private PaginationResponse<Product> getPaginatedResponse(Page<Product> products) {
         PaginationResponse<Product> response = new PaginationResponse<Product>();
         response.setContent(products.getContent());

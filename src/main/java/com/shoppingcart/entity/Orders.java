@@ -26,9 +26,11 @@ public class Orders {
     private String razorpaySignature;
     private Integer quantity;
     private Integer totalAmount;
+    private Integer rating;
+    private Long receiptId;
 
     @Temporal(TemporalType.DATE)
-    private Date createAt;
+    private Date createdAt;
 
     @ManyToOne
     private User user;

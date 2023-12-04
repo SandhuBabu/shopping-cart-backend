@@ -8,7 +8,6 @@ import java.util.List;
 @Data
 @Builder
 public class CreateOrderRequest {
-    private Long addressId;
     private List<ProductList> products;
     private Integer totalAmount;
 

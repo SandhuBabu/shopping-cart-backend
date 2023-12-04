@@ -1,8 +1,8 @@
 package com.shoppingcart.controller;
 
+import com.shoppingcart.dto.AdminDashboardDto;
 import com.shoppingcart.dto.OrderDto;
 import com.shoppingcart.dto.PaginationResponse;
-import com.shoppingcart.entity.Orders;
 import com.shoppingcart.entity.Product;
 import com.shoppingcart.exception.ProductException;
 import com.shoppingcart.service.OrderService;
@@ -24,6 +24,13 @@ public class AdminController {
 
     private final ProductService productService;
     private final OrderService orderService;
+
+
+    @GetMapping("/dashboard")
+    public ResponseEntity<AdminDashboardDto> dashboardDetails() {
+        var res = orderService.getDashboardDetails();
+        return ResponseEntity.ok(res);
+    }
 
     @PostMapping("/addProduct")
     public ResponseEntity<Product> addProduct(

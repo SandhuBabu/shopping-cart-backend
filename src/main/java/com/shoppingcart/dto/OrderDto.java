@@ -14,6 +14,7 @@ public class OrderDto {
     private String razorpayOrderId;
     private String paymentId;
     private String status;
+    private Integer rating;
     private String paymentStatus;
     private String razorpaySignature;
     private Integer quantity;

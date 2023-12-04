@@ -57,7 +57,7 @@ public class ProductController {
     }
 
     @GetMapping("/priceLimit/{price}")
-    public ResponseEntity<List<Product>> getProductsByPriceLimit(@PathVariable Double price) {
+    public ResponseEntity<List<Product>> getProductsByPriceLimit(@PathVariable Integer price) {
         var product = productService.findByPrice(price);
         return ResponseEntity.ok(product);
     }

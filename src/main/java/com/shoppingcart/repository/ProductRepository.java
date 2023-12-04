@@ -23,7 +23,11 @@ public interface ProductRepository extends JpaRepository<Product, Long> {
     @Query("SELECT p FROM Product p WHERE p.title LIKE %:term% OR p.category LIKE %:term% OR p.gender LIKE %:term%")
     Page<Product> getSearchResults(String term, Pageable pageable);
 
-    public List<Product> findByPriceLessThan(double price);
+    public List<Product> findByPriceLessThan(Integer price);
+
+    public Integer countByStockAvailableLessThan(Integer price);
+
+    public List<Product> findByStockAvailableLessThan(Integer stock);
 
     public List<Product> findByGender(String gender);
 
