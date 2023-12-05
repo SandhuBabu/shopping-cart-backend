@@ -37,13 +37,18 @@ public class OrderService {
     public OrderCreatedResponse createOrder(CreateOrderRequest orderRequestDto, String userEmail) {
 
         try {
+            var user = userRepository.findByEmail(userEmail).orElseThrow(()->new UserNotFoundException("Unauthorized"));
+            var lastNonPlacedOrders = orderRepository.findLastOrder(user);
+            if(lastNonPlacedOrders != null) {
+                orderRepository.deleteAll(lastNonPlacedOrders);
+            }
             Integer DELIVERY_FEE = 49;
             Integer totalAmount = (orderRequestDto.getTotalAmount() + DELIVERY_FEE) * 100;
             Order order = createRazorpayOrder(totalAmount);
             if (order == null)
                 return null;
 
-            var user = userRepository.findByEmail(userEmail).get();
+
             var address = user.getAddress();
             var orderAddress = Address.builder()
                     .houseName(address.getHouseName())
@@ -66,6 +71,7 @@ public class OrderService {
 
     public String paymentSuccess(OrderSuccessDto orderSuccessDto) {
         try {
+
             var orders = orderRepository.findByRazorpayOrderId(orderSuccessDto.getRazorpayOderId());
             for (Orders order : orders) {
                 var product = productService.getProductById(order.getProduct().getId());
@@ -184,7 +190,6 @@ public class OrderService {
         }
     }
 
-
     private Object refundRequest(String paymentId, Integer amount, Long orderId) throws RazorpayException {
         try {
             RazorpayClient razorpay = new RazorpayClient(KEY_ID, KEY_SECRET);
@@ -287,4 +292,6 @@ public class OrderService {
         response.setContent(buildOrderDto(orders.getContent()));
         return response;
     }
+
+
 }

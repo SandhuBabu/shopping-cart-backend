@@ -34,5 +34,6 @@ public interface OrderRepository extends JpaRepository<Orders, Long> {
     @Query("SELECT o.id FROM Orders o ORDER BY o.id DESC LIMIT 1")
     Long findLastId();
 
-
+    @Query("SELECT o FROM Orders o WHERE o.user=:user AND status='created' AND paymentStatus='unpaid'")
+    List<Orders> findLastOrder(User user);
 }

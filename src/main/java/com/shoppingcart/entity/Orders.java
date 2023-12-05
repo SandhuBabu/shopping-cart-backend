@@ -38,6 +38,6 @@ public class Orders {
     @ManyToOne
     private Product product;
 
-    @ManyToOne
+    @ManyToOne(cascade = CascadeType.REMOVE)
     private Address address;
 }
